@@ -4,7 +4,7 @@ const Event = require('./Events');
 const Tag = require('./Tags');
 const Post = require('./Posts');
 
-sequelize.sync({force: true}).then(() => console.log('db isready'));
+sequelize.sync().then(() => console.log('db isready'));
 
 Event.belongsToMany(Tag, {
   through: "event_tag",
@@ -162,6 +162,13 @@ app.get('/posts', async (req, res) => {
   const posts = await Post.findAll()
 
   res.send(posts);
+
+})
+
+app.get('/tags', async (req, res) => {
+  const tags = await Tag.findAll()
+
+  res.send(tags);
 
 })
 
