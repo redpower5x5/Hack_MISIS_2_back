@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const sequelize = require('./database');
 const Event = require('./Events');
 const Tag = require('./Tags');
@@ -88,6 +89,10 @@ exports.addLike = (userId, eventId) => {
 
 const app = express();
 
+app.use(cors({
+  origin: 'https://*vk-apps.com'
+}));
+
 app.use(express.json())
 
 app.post('/init/tags', (req, res) => {
@@ -155,7 +160,10 @@ app.get('/events', async (req, res) => {
   //query params
   const { tags, date_start, date_end, roles, age} = req.query;
   //filter by tag names
-  if (tags) where_tags.name  = { [Op.in]: tags};
+  if (tags) {
+    if(tags.length > 0)
+      where_tags.name  = { [Op.in]: tags};
+  }
   // get all events in interval
   if (date_start && date_end) {
       where = {
