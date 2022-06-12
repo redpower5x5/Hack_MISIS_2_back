@@ -1,5 +1,5 @@
 const express = require("express");
-const cors = require('cors');
+const cors = require("cors");
 const sequelize = require('./database');
 const Event = require('./Events');
 const Tag = require('./Tags');
@@ -158,7 +158,7 @@ app.get('/events', async (req, res) => {
   let where = {};
   let where_tags = {}
   //query params
-  const { tags, date_start, date_end, roles, age} = req.query;
+  const { tags, date_start, date_end, roles, age, search_string} = req.query;
   //filter by tag names
   if (tags) {
     console.log(tags);
@@ -166,10 +166,19 @@ app.get('/events', async (req, res) => {
       where_tags.name  = { [Op.in]: tags};
     }
   }
+  if(search_string) {
+    if(!where[Op.or]) where[Op.or] = []
+    where[Op.or].push(
+        {
+        title: { [Op.like]: '%' + search_string + '%' }
+      },{
+        description: { [Op.like]: '%' + search_string + '%' }
+    })
+  }
   // get all events in interval
   if (date_start && date_end) {
-      where = {
-      [Op.or]: [
+    if(!where[Op.or]) where[Op.or] = []
+      where[Op.or].push(
         {
           date_start: {
             [Op.gte]: date_start,
@@ -182,7 +191,7 @@ app.get('/events', async (req, res) => {
             [Op.lte]: date_end
           }
         }
-    ]}
+    )
   }
   //get all events below or above date
   else if (date_start) where.date_start = { [Op.gte]: date_start}
@@ -327,33 +336,7 @@ app.post('/event/:id/admin', async (req, res) => {
 })
 
 
-app.get('/events/search', async (req, res) => {
 
-  const search_string = req.query.search;
-
-  const events = await Event.findAll({
-    where: {
-      [Op.or]: [
-        {
-        title: { [Op.like]: '%' + search_string + '%' }
-      },{
-        description: { [Op.like]: '%' + search_string + '%' }
-    }]
-    },
-    include: [
-      {
-        model: Tag,
-        as: "tags",
-        attributes: ["id", "name"],
-        through: {
-          attributes: [],
-        },
-      },
-    ],
-  });
-
-  res.send(events);
-})
 
 app.get('/users', async (req, res) => {
   const users = await User.findAll({
@@ -381,13 +364,15 @@ app.get('/users', async (req, res) => {
 })
 
 app.post('/users', async (req, res) => {
-  let user =  User.create(req.body);
+  let user =  await User.create(req.body);
+  if(req.body.tags) {
   const tags = await Tag.findAll({
-    where: {
-      name: req.body.tags
-    }
-  })
-  user.setTags(tags);
+      where: {
+        name: req.body.tags
+      }
+    })
+    user.setTags(tags);
+  }
 
   user = await user.save();
   res.send(user);
@@ -458,11 +443,7 @@ app.get('/user/:id/likes', async (req, res) => {
     include:
     [{
       model: Like,
-      include: User,
-    },
-    {
-      model: Request,
-      include: Event
+      include: Event,
     }
   ]
   });
