@@ -156,7 +156,7 @@ app.get('/events', async (req, res) => {
   let where = {};
   let where_tags = {}
   //query params
-  const { tags, date_start, date_end, roles, age, search_string} = req.query;
+  const { tags, date_start, date_end, roles, age, query} = req.query;
   //filter by tag names
   if (tags) {
     const tags_array = tags.split("-");
@@ -165,13 +165,13 @@ app.get('/events', async (req, res) => {
       where_tags.name  = { [Op.in]: tags_array};
     }
   }
-  if(search_string) {
+  if(query) {
     if(!where[Op.or]) where[Op.or] = []
     where[Op.or].push(
         {
-        title: { [Op.like]: '%' + search_string + '%' }
+        title: { [Op.like]: '%' + query + '%' }
       },{
-        description: { [Op.like]: '%' + search_string + '%' }
+        description: { [Op.like]: '%' + query + '%' }
     })
   }
   // get all events in interval
@@ -230,12 +230,14 @@ app.get('/tags', async (req, res) => {
 
 app.post('/events', async (req, res) => {
   let event = await Event.create(req.body);
-  const tags = await Tag.findAll({
-    where: {
-      name: req.body.tags
-    }
-  })
-  event.setTags(tags);
+  if(req.body.tags) {
+    const tags = await Tag.findAll({
+      where: {
+        name: req.body.tags
+      }
+    })
+    event.setTags(tags);
+  }
 
   event = await event.save();
   res.send(event);
