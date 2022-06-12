@@ -90,7 +90,7 @@ exports.addLike = (userId, eventId) => {
 const app = express();
 
 app.use(cors({
-  origin: 'https://*vk-apps.com'
+  origin: ['https://user84549799-2sv3oiue.wormhole.vk-apps.com', '*.vk-apps.com']
 }));
 
 app.use(express.json())
