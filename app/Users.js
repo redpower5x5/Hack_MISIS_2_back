@@ -25,6 +25,9 @@ User.init({
     email: {
         type: DataTypes.TEXT
     },
+    potential_events: {
+        type: DataTypes.JSONB
+    }
 }, {
     sequelize,
     modelName: 'user'
