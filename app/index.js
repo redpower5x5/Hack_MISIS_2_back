@@ -428,6 +428,11 @@ app.get('/users', async (req, res) => {
 
 })
 
+app.delete('/users', async (req, res) => {
+  await User.drop();
+  res.send("User table dropped!");
+})
+
 app.post('/users', async (req, res) => {
   let user =  await User.create(req.body);
   if(req.body.tags) {
