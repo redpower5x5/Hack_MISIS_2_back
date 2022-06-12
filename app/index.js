@@ -165,17 +165,49 @@ app.get('/events', async (req, res) => {
       where_tags.name  = { [Op.in]: tags_array};
     }
   }
-  if(query) {
+  if(query && date_start && date_end) {
+    
+    where = {[Op.and]: [
+      {
+        [Op.or]: [
+          {
+            title: { [Op.like]: '%' + query + '%' }
+          },
+          {
+            description: { [Op.like]: '%' + query + '%' }
+          }
+        ]
+      },
+      {
+        [Op.or]: [
+          {
+            date_start: {
+              [Op.gte]: date_start,
+              [Op.lte]: date_end
+            }
+          },
+          {
+            date_end: {
+              [Op.gte]: date_start,
+              [Op.lte]: date_end
+            }
+          }
+        ]
+      }
+    ]}
+        
+  }
+  else if (query) {
     if(!where[Op.or]) where[Op.or] = []
-    where[Op.or].push(
-        {
+      where[Op.or].push({
         title: { [Op.like]: '%' + query + '%' }
-      },{
+      },
+      {
         description: { [Op.like]: '%' + query + '%' }
-    })
+      })
   }
   // get all events in interval
-  if (date_start && date_end) {
+  else if (date_start && date_end) {
     if(!where[Op.or]) where[Op.or] = []
       where[Op.or].push(
         {
@@ -282,6 +314,13 @@ app.put('/event/:id', async (req, res) => {
   event = await event.save();
   res.send(event);
 
+})
+
+app.delete('/event/:id', async (req, res) => {
+  const requestId = req.params.id;
+  let event = await Event.findOne({ where: { id: requestId}});
+  await event.destroy();
+  res.send('item deleted!');
 })
 
 app.get('/event/:id', async (req, res) => {
