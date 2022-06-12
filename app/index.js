@@ -38,12 +38,7 @@ Event.hasMany(Like);
 Like.belongsTo(Event);
 User.belongsToMany(Event, { through:  Like});
 Event.belongsToMany(User, { through: Like});
-User.hasMany(Request);
-Request.belongsTo(User);
-Event.hasMany(Request);
-Request.belongsTo(Event);
-User.belongsToMany(Event, { through:  Request});
-Event.belongsToMany(User, { through: Request});
+
 
 
 
@@ -150,55 +145,49 @@ app.post('/init/posts', (req, res) => {
   ]).then(() => {
     res.send('done!');
   })
-
-  
 })
 
-app.post('/init/events', (req, res) => {
-  Event.bulkCreate([
-    {
-      date_start: "2022-05-01",
-      date_end: "2022-12-31",
-      address: "Город Москва",
-      title: "Станьте медиаволонтёром!",
-      imgs: [
-        "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2370&q=80",
-        "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2370&q=80"
-      ],
-      requirements: [
-        "креативность",
-        "умение фотографировать, снимать и/или монтировать видео, писать посты",
-        "готовность учиться новому",
-        "умение находить компромиссы",
-        "готовность помогать в развитии добровольчества в Москве",
-      ],
-      description: "Умеете фотографировать, писать посты для соцсетей или снимать видео? Готовы помогать? Приглашаем вас стать частью команды медиаволонтёров! Вы прокачаете свои навыки в фотографировании, познакомитесь с единомышленниками и будете частью масштабных событий Москвы, получите бесценный опыт в медиасфере и сможете попробовать себя в разных ролях: фотографа, видеографа или райтера. Заполняйте анкету, прикрепляйте ссылку на своё портфолио (ваши тексты, фото- или видеоматериалы), и мы с вами свяжемся по электронной почте в течение недели.",
-      important: "Ваше портфолио должно быть загружено на любом облачном хранилище, доступ пользователям по ссылке должен быть разрешён.",
-      organization: "ГБУ города Москвы «Мосволонтёр»",
-      email: "ProkofevIA@mos.ru",
-      phone: "8 (499) 722-69-94",
-      orgName: "Прокофьев Игорь"
-    }
-  ])
-  this.addEvent(1,1);
-  this.addEvent(2,1).then(() => {
-    res.send('done!');
-  })
-})
+
 
 app.get('/events', async (req, res) => {
+  let where = {};
+  let where_tags = {}
+  //query params
+  const { tags, date_start, date_end, roles, age} = req.query;
+  //filter by tag names
+  if (tags) where_tags.name  = { [Op.in]: tags};
+  // get all events in interval
+  if (date_start && date_end) {
+      where = {
+      [Op.or]: [
+        {
+          date_start: {
+            [Op.gte]: date_start,
+            [Op.lte]: date_end
+          }
+        },
+        {
+          date_end: {
+            [Op.gte]: date_start,
+            [Op.lte]: date_end
+          }
+        }
+    ]}
+  }
+  //get all events below or above date
+  else if (date_start) where.date_start = { [Op.gte]: date_start}
+  else if (date_end) where.date_start = { [Op.lte]: date_end}
   const events = await Event.findAll({
+    where: where,
     include: [
       {
         model: Tag,
+        where: where_tags,
         as: "tags",
         attributes: ["id", "name"],
         through: {
           attributes: [],
         },
-        // through: {
-        //   attributes: ["tag_id", "tutorial_id"],
-        // },
       },
     ],
   })
@@ -222,36 +211,114 @@ app.get('/tags', async (req, res) => {
 })
 
 app.post('/events', async (req, res) => {
-  await Event.create(req.body);
-  res.send('event created!');
+  let event = await Event.create(req.body);
+  const tags = await Tag.findAll({
+    where: {
+      name: req.body.tags
+    }
+  })
+  event.setTags(tags);
+
+  event = await event.save();
+  res.send(event);
 })
 
-app.put('/events/:id', async (req, res) => {
+app.put('/event/:id', async (req, res) => {
   const requestId = req.params.id;
   let event = await Event.findOne({ where: { id: requestId}});
   event.set(req.body);
+  const tags = await Tag.findAll({
+    where: {
+      name: req.body.tags
+    }
+  })
+  event.setTags(tags);
 
   event = await event.save();
   res.send(event);
 
 })
 
-app.put('/events/:id/tags', async (req, res) => {
+app.get('/event/:id', async (req, res) => {
   const requestId = req.params.id;
-  let event = await Event.findOne({ where: { id: requestId}});
-  const tags = await Tag.findAll({
-    where: {
-      id: req.body
-    }
-  })
-  event.setTags(tags);
-
-  event = await event.save();
-  res.send(tags);
+  let event = await Event.findOne({ 
+    where: { id: requestId},
+    include: [
+      {
+        model: Tag,
+        where: where_tags,
+        as: "tags",
+        attributes: ["id", "name"],
+        through: {
+          attributes: [],
+        },
+        // through: {
+        //   attributes: ["tag_id", "tutorial_id"],
+        // },
+      },
+    ],
+  });
+ 
+  res.send(event);
 
 })
 
-app.get('/events/filter', async (req, res) => {
+app.post('/event/:id', async (req, res) => {
+  const requestId = req.params.id;
+  const { userId, offerName} = req.query;
+  let event = await Event.findOne({ where: { id: requestId}});
+  let offers_json_data =  event.offers_json;
+  console.log(JSON.stringify(offers_json_data));
+  for (let index = 0; index < offers_json_data.offers.length; index++) { 
+    if(offers_json_data.offers[index]['applied'].includes(userId) || offers_json_data.offers[index]['accepted'].includes(userId)) {
+      res.status(409);
+      res.send('alredy exists!');
+      return;
+      
+    }
+  }
+  offers_json_data.offers.find(it => it.title === offerName)['applied'].push(userId);
+  event.set({
+    offers_json: offers_json_data
+  });
+  await event.changed("offers_json",true)
+  event = await event.save();
+  res.send(event);
+})
+
+app.post('/event/:id/admin', async (req, res) => {
+  const requestId = req.params.id;
+  const { userId, offerName, action} = req.query;
+  let event = await Event.findOne({ where: { id: requestId}});
+  let offers_json_data =  event.offers_json;
+  if (action === "accept") {
+    if(!offers_json_data.offers.find(it => it.title === offerName)['accepted'].includes(userId)) {
+      offers_json_data.offers.find(it => it.title === offerName)['applied'].pop(userId);
+      offers_json_data.offers.find(it => it.title === offerName)['accepted'].push(userId);
+    } else {
+      res.status(409)
+      res.send('alredy accepted!')
+    }
+  } else if (action === "reject") {
+    if (offers_json_data.offers.find(it => it.title === offerName)['applied'].includes(userId))
+      offers_json_data.offers.find(it => it.title === offerName)['applied'].pop(userId);
+    if (offers_json_data.offers.find(it => it.title === offerName)['accepted'].includes(userId)) {
+      offers_json_data.offers.find(it => it.title === offerName)['accepted'].pop(userId);
+      offers_json_data.offers.find(it => it.title === offerName)['applied'].push(userId);
+    }
+    
+    
+  }
+  event.set({
+    offers_json: offers_json_data
+  });
+  await event.changed("offers_json",true)
+  event = await event.save();
+  res.send(event);
+})
+
+
+app.get('/events/search', async (req, res) => {
 
   const search_string = req.query.search;
 
@@ -305,12 +372,20 @@ app.get('/users', async (req, res) => {
 })
 
 app.post('/users', async (req, res) => {
-  await User.create(req.body);
-  res.send('user created!');
+  let user =  User.create(req.body);
+  const tags = await Tag.findAll({
+    where: {
+      name: req.body.tags
+    }
+  })
+  user.setTags(tags);
+
+  user = await user.save();
+  res.send(user);
 })
 
-app.post('/users/like', async (req, res) => {
-  const userId = req.query.user;
+app.post('/user/:id/like', async (req, res) => {
+  const userId = req.params.id;
   const eventId = req.query.event;
 
   let user = await User.findOne({ where: { id: userId}});
@@ -323,7 +398,49 @@ app.post('/users/like', async (req, res) => {
 
 })
 
-app.get('/users/:id/likes', async (req, res) => {
+app.get('/user/:id', async (req, res) => {
+  const requestId = req.params.id;
+  const user = await User.findOne({
+    where: { id: requestId},
+    include: [
+      {
+        model: Tag,
+        as: "tags",
+        attributes: ["id", "name"],
+        through: {
+          attributes: [],
+        },
+        // through: {
+        //   attributes: ["tag_id", "tutorial_id"],
+        // },
+      },
+      {
+        model: Like,
+        include: Event
+      }
+    ],
+  })
+
+  res.send(user);
+})
+
+app.put('/user/:id', async (req, res) => {
+  const requestId = req.params.id;
+  let user = await User.findOne({ where: { id: requestId}});
+  user.set(req.body);
+  const tags = await Tag.findAll({
+    where: {
+      name: req.body.tags
+    }
+  })
+  user.setTags(tags);
+
+  user = await user.save();
+  res.send(user);
+
+})
+
+app.get('/user/:id/likes', async (req, res) => {
   const requestId = req.params.id;
   let user = await User.findAll({ 
     where: { 
@@ -332,7 +449,7 @@ app.get('/users/:id/likes', async (req, res) => {
     include:
     [{
       model: Like,
-      include: Event,
+      include: User,
     },
     {
       model: Request,

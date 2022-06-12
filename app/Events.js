@@ -10,7 +10,7 @@ Event.init({
     description: {
         type: DataTypes.TEXT
     },
-    organizator: {
+    organization: {
         type: DataTypes.TEXT
     },
     offers_json: {
@@ -24,16 +24,19 @@ Event.init({
     },
     date_start: {
         allowNull: false,
-        type: DataTypes.TEXT
+        type: DataTypes.DATE
     },
     date_end: {
         allowNull: false,
-        type: DataTypes.TEXT
+        type: DataTypes.DATE
     },
     imgs: {
         type: DataTypes.ARRAY(DataTypes.TEXT)
     },
     requirements: {
+        type: DataTypes.ARRAY(DataTypes.TEXT)
+    },
+    services: { 
         type: DataTypes.ARRAY(DataTypes.TEXT)
     },
     important: {
