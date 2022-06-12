@@ -256,7 +256,6 @@ app.get('/event/:id', async (req, res) => {
     include: [
       {
         model: Tag,
-        where: where_tags,
         as: "tags",
         attributes: ["id", "name"],
         through: {
