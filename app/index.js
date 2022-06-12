@@ -246,12 +246,14 @@ app.put('/event/:id', async (req, res) => {
   const requestId = req.params.id;
   let event = await Event.findOne({ where: { id: requestId}});
   event.set(req.body);
+  if(req.body.tags) {
   const tags = await Tag.findAll({
     where: {
       name: req.body.tags
     }
   })
   event.setTags(tags);
+}
 
   event = await event.save();
   res.send(event);
@@ -422,11 +424,13 @@ app.put('/user/:id', async (req, res) => {
   const requestId = req.params.id;
   let user = await User.findOne({ where: { id: requestId}});
   user.set(req.body);
-  const tags = await Tag.findAll({
-    where: {
-      name: req.body.tags
-    }
-  })
+  if(req.body.tags) {
+    const tags = await Tag.findAll({
+      where: {
+        name: req.body.tags
+      }
+    })
+  }
   user.setTags(tags);
 
   user = await user.save();
