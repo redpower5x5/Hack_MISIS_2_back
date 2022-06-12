@@ -36,8 +36,8 @@ User.hasMany(Like);
 Like.belongsTo(User);
 Event.hasMany(Like);
 Like.belongsTo(Event);
-User.belongsToMany(Event, { through:  Like});
-Event.belongsToMany(User, { through: Like});
+User.belongsToMany(Event, { through:  Like, onDelete: 'CASCADE', hooks: true });
+Event.belongsToMany(User, { through: Like, onDelete: 'CASCADE', hooks: true});
 
 
 
