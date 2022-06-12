@@ -161,8 +161,10 @@ app.get('/events', async (req, res) => {
   const { tags, date_start, date_end, roles, age} = req.query;
   //filter by tag names
   if (tags) {
-    if(tags.length > 0)
+    console.log(tags);
+    if(tags[0] != '') {
       where_tags.name  = { [Op.in]: tags};
+    }
   }
   // get all events in interval
   if (date_start && date_end) {
