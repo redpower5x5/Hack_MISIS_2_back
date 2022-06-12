@@ -26,6 +26,10 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_DB=${POSTGRES_DB}
     restart: unless-stopped
+    volumes:
+      - misis-hack-db-volume:/var/lib/postgresql/data
 
 networks:
   misis-hack_network:
+volumes:
+  misis-hack-db-volume:

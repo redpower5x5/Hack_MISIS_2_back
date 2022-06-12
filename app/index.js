@@ -3,6 +3,10 @@ const sequelize = require('./database');
 const Event = require('./Events');
 const Tag = require('./Tags');
 const Post = require('./Posts');
+const User = require('./Users');
+const Like = require('./Likes');
+const Request = require('./Requests');
+const { Op } = require("sequelize");
 
 sequelize.sync().then(() => console.log('db isready'));
 
@@ -17,6 +21,32 @@ Tag.belongsToMany(Event, {
   foreignKey: "tag_id",
 });
 
+User.belongsToMany(Tag, {
+  through: "user_tag",
+  as: "tags",
+  foreignKey: "user_id",
+});
+Tag.belongsToMany(User, {
+  through: "user_tag",
+  as: "users",
+  foreignKey: "tag_id",
+});
+
+User.hasMany(Like);
+Like.belongsTo(User);
+Event.hasMany(Like);
+Like.belongsTo(Event);
+User.belongsToMany(Event, { through:  Like});
+Event.belongsToMany(User, { through: Like});
+User.hasMany(Request);
+Request.belongsTo(User);
+Event.hasMany(Request);
+Request.belongsTo(Event);
+User.belongsToMany(Event, { through:  Request});
+Event.belongsToMany(User, { through: Request});
+
+
+
 exports.addEvent = (tagId, eventId) => {
   return Tag.findByPk(tagId)
     .then((tag) => {
@@ -26,16 +56,38 @@ exports.addEvent = (tagId, eventId) => {
       }
       return Event.findByPk(eventId).then((event) => {
         if (!event) {
-          console.log("Tutorial not found!");
+          console.log("Event not found!");
           return null;
         }
         tag.addEvent(event);
-        console.log(`>> added Tutorial id=${event.id} to Tag id=${tag.id}`);
+        console.log(`>> added Event id=${event.id} to Tag id=${tag.id}`);
         return tag;
       });
     })
     .catch((err) => {
-      console.log(">> Error while adding Tutorial to Tag: ", err);
+      console.log(">> Error while adding Event to Tag: ", err);
+    });
+};
+
+exports.addLike = (userId, eventId) => {
+  return User.findByPk(tagId)
+    .then((user) => {
+      if (!user) {
+        console.log("Tag not found!");
+        return null;
+      }
+      return Event.findByPk(eventId).then((event) => {
+        if (!event) {
+          console.log("Event not found!");
+          return null;
+        }
+        user.addEvent(event);
+        console.log(`>> added Event id=${event.id} to Tag id=${tag.id}`);
+        return tag;
+      });
+    })
+    .catch((err) => {
+      console.log(">> Error while adding Event to Tag: ", err);
     });
 };
 
@@ -103,9 +155,6 @@ app.post('/init/posts', (req, res) => {
 })
 
 app.post('/init/events', (req, res) => {
-  var obj = {
-    "req": []
-  };
   Event.bulkCreate([
     {
       date_start: "2022-05-01",
@@ -170,6 +219,139 @@ app.get('/tags', async (req, res) => {
 
   res.send(tags);
 
+})
+
+app.post('/events', async (req, res) => {
+  await Event.create(req.body);
+  res.send('event created!');
+})
+
+app.put('/events/:id', async (req, res) => {
+  const requestId = req.params.id;
+  let event = await Event.findOne({ where: { id: requestId}});
+  event.set(req.body);
+
+  event = await event.save();
+  res.send(event);
+
+})
+
+app.put('/events/:id/tags', async (req, res) => {
+  const requestId = req.params.id;
+  let event = await Event.findOne({ where: { id: requestId}});
+  const tags = await Tag.findAll({
+    where: {
+      id: req.body
+    }
+  })
+  event.setTags(tags);
+
+  event = await event.save();
+  res.send(tags);
+
+})
+
+app.get('/events/filter', async (req, res) => {
+
+  const search_string = req.query.search;
+
+  const events = await Event.findAll({
+    where: {
+      [Op.or]: [
+        {
+        title: { [Op.like]: '%' + search_string + '%' }
+      },{
+        description: { [Op.like]: '%' + search_string + '%' }
+    }]
+    },
+    include: [
+      {
+        model: Tag,
+        as: "tags",
+        attributes: ["id", "name"],
+        through: {
+          attributes: [],
+        },
+      },
+    ],
+  });
+
+  res.send(events);
+})
+
+app.get('/users', async (req, res) => {
+  const users = await User.findAll({
+    include: [
+      {
+        model: Tag,
+        as: "tags",
+        attributes: ["id", "name"],
+        through: {
+          attributes: [],
+        },
+        // through: {
+        //   attributes: ["tag_id", "tutorial_id"],
+        // },
+      },
+      {
+        model: Like,
+        include: Event
+      }
+    ],
+  })
+
+  res.send(users);
+
+})
+
+app.post('/users', async (req, res) => {
+  await User.create(req.body);
+  res.send('user created!');
+})
+
+app.post('/users/like', async (req, res) => {
+  const userId = req.query.user;
+  const eventId = req.query.event;
+
+  let user = await User.findOne({ where: { id: userId}});
+  let event = await Event.findOne({ where: { id: eventId}});
+  user.addEvent(event);
+  // event.addLike(user);
+  user = await user.save();
+  event = await event.save();
+  res.send('data inserted!');
+
+})
+
+app.get('/users/:id/likes', async (req, res) => {
+  const requestId = req.params.id;
+  let user = await User.findAll({ 
+    where: { 
+      id: requestId
+    },
+    include:
+    [{
+      model: Like,
+      include: Event,
+    },
+    {
+      model: Request,
+      include: Event
+    }
+  ]
+  });
+
+  res.send(user)
+})
+
+app.get('/showLike', (req, res) => {
+  const likes = Like.findAll();
+  res.send(likes);
+})
+
+app.get('/drop', (req,res) => {
+  sequelize.sync({force: true});
+  res.send('all tables dropped!')
 })
 
 

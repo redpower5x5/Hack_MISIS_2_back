@@ -10,8 +10,17 @@ Event.init({
     description: {
         type: DataTypes.TEXT
     },
+    organizator: {
+        type: DataTypes.TEXT
+    },
+    offers_json: {
+        type: DataTypes.JSONB
+    },
     address: {
         type: DataTypes.TEXT
+    },
+    coordinates: {
+        type: DataTypes.ARRAY(DataTypes.REAL)
     },
     date_start: {
         allowNull: false,
