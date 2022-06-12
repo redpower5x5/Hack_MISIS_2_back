@@ -6,7 +6,6 @@ const Tag = require('./Tags');
 const Post = require('./Posts');
 const User = require('./Users');
 const Like = require('./Likes');
-const Request = require('./Requests');
 const { Op } = require("sequelize");
 
 sequelize.sync().then(() => console.log('db isready'));
