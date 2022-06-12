@@ -15,7 +15,16 @@ User.init({
     },
     age: {
         type: DataTypes.INTEGER
-    }
+    },
+    education: {
+        type: DataTypes.TEXT
+    },
+    phone: {
+        type: DataTypes.TEXT
+    },
+    email: {
+        type: DataTypes.TEXT
+    },
 }, {
     sequelize,
     modelName: 'user'

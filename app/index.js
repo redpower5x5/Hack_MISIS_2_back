@@ -159,9 +159,10 @@ app.get('/events', async (req, res) => {
   const { tags, date_start, date_end, roles, age, search_string} = req.query;
   //filter by tag names
   if (tags) {
-    console.log(tags);
-    if(tags[0] != '') {
-      where_tags.name  = { [Op.in]: tags};
+    const tags_array = tags.split("-");
+    console.log(tags_array);
+    if(tags_array) {
+      where_tags.name  = { [Op.in]: tags_array};
     }
   }
   if(search_string) {
@@ -238,6 +239,29 @@ app.post('/events', async (req, res) => {
 
   event = await event.save();
   res.send(event);
+})
+
+app.post('/event/select', async (req, res) => {
+  const arrayId = req.body.events;
+  const events = await Event.findAll({
+    where: {
+      id: arrayId
+    },
+    include: [
+      {
+        model: Tag,
+        as: "tags",
+        attributes: ["id", "name"],
+        through: {
+          attributes: [],
+        },
+        // through: {
+        //   attributes: ["tag_id", "tutorial_id"],
+        // },
+      },
+    ],
+  })
+  res.send(events);
 })
 
 app.put('/event/:id', async (req, res) => {
@@ -416,6 +440,30 @@ app.get('/user/:id', async (req, res) => {
   })
 
   res.send(user);
+})
+
+app.post('/user/select', async (req,res) => {
+  const arrayId = req.body.users;
+  const users = await User.findAll({
+    where: {
+      id: arrayId
+    },
+    include: [
+      {
+        model: Tag,
+        as: "tags",
+        attributes: ["id", "name"],
+        through: {
+          attributes: [],
+        },
+      },
+      {
+        model: Like,
+        include: Event
+      }
+    ],
+  })
+  res.send(users);
 })
 
 app.put('/user/:id', async (req, res) => {
