@@ -13,12 +13,15 @@
 docker-compose up --build -d
 ```
 
+## Front_end
+
+в папке front находится исходный код самого приложения VK Mini Apps, [ссылка](https://vk.com/app8191594) на запущенный на сервере инстанс и пояснение, как его запускать(необходима настройка в личном кабинете вк) 
 
 ## Docs:
 
 - [VK API](https://dev.vk.com/reference)
 - [VK UI](https://vkcom.github.io/VKUI/#/QuickStart)
-- [API REFERENCE](https://docs.google.com/document/d/1IbywYXWdXyYnBNMSqSvtKRagz93-nXuDsXRfO3IPfvA/edit?usp=sharing)
+- [FULL PROJECT DESCRIPTION](https://docs.google.com/document/d/1IbywYXWdXyYnBNMSqSvtKRagz93-nXuDsXRfO3IPfvA/edit?usp=sharing)
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

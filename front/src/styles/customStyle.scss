@@ -1,0 +1,92 @@
+.posts-element {
+  .ContentCard__tappable {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    &:hover {
+      transition: opacity 0.15s ease-out;
+    }
+  }
+  img {
+    border-radius: 8px 0 0 8px !important;
+    width: 50%;
+    min-width: 50%;
+  }
+}
+
+.post {
+  &_link {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &_date {
+    padding-left: 0;
+  }
+}
+
+.placeholder {
+  height: 1000px;
+}
+
+.event {
+  &_title {
+    margin-bottom: 20px;
+  }
+
+  &_text {
+    margin-bottom: 20px;
+  }
+
+  &_dates {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-left: 0;
+  }
+
+  &_info {
+    padding-left: 0;
+  }
+}
+
+.calendar-range {
+  margin: 0 auto;
+}
+
+.story_cont {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  width: 120px;
+  height: 120px;
+}
+
+.story_img {
+  flex-shrink: 0;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+.story_card.story_card.story_card {
+  width: 120px;
+  height: 120px;
+  margin-right: 15px;
+  border-radius: 20px;
+  border: 2px solid var(--accent);
+  overflow: hidden;
+  img {
+    border-radius: 18px;
+  }
+}
+
+.welcome {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &_button {
+    width: 275px;
+  }
+}
