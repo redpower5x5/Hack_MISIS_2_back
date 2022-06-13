@@ -10,7 +10,7 @@ Go to created folder and run:
 
 `npm run build` to build production bundle, with tree-shaking, uglify and all this modern fancy stuff.
 
-[ссылка](https://vk.com/app8191594) на запущенное приложение.
+[ссылка](https://vk.com/app8180488) на запущенное приложение.
 
 Docs:
 
