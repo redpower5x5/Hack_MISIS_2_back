@@ -5,9 +5,11 @@ import { AuthContext } from "../contexts/AuthContext";
 const AuthProvider: FC = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isBusines, setIsBusines] = useState(false);
 
-  const handleLogin = (asAdmin: boolean) => {
+  const handleLogin = (asAdmin: boolean, asBusines: boolean) => {
     setIsAdmin(asAdmin);
+    setIsBusines(asBusines);
     setIsLoggedIn(true);
   };
 
@@ -21,6 +23,7 @@ const AuthProvider: FC = ({ children }) => {
       value={{
         isLoggedIn,
         isAdmin,
+        isBusines,
         onLogin: handleLogin,
         onLogout: handleLogout,
       }}

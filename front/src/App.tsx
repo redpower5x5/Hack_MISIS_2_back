@@ -34,7 +34,7 @@ const App: FC = () => {
     <ScreenSpinner size="large" />
   );
 
-  const { isLoggedIn, isAdmin, onLogin, onLogout } = useAuth();
+  const { isLoggedIn, isAdmin, isBusines, onLogin, onLogout } = useAuth();
 
   const [activeTab, setActiveTab] = useState<Tab>("posts");
 
@@ -78,8 +78,8 @@ const App: FC = () => {
   }, []);
 
   useEffect(() => {
-    setActiveTab(isAdmin ? "events" : "posts");
-  }, [isAdmin]);
+    setActiveTab(isAdmin || isBusines ? "events" : "posts");
+  }, [isAdmin, isBusines]);
 
   return (
     <Provider store={store}>

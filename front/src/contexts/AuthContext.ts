@@ -3,7 +3,8 @@ import React from "react";
 export type AuthContextProps = {
   isLoggedIn: boolean;
   isAdmin: boolean;
-  onLogin: (asAdmin: boolean) => void;
+  isBusines: boolean;
+  onLogin: (asAdmin: boolean, asBusines: boolean) => void;
   onLogout: () => void;
 };
 

@@ -15,11 +15,11 @@ type Props = {
 };
 
 const Navigation: FC<Props> = ({ onTabChange, activeTab }) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isBusines } = useAuth();
 
   return (
     <Tabbar>
-      {!isAdmin && (
+      {!isAdmin && !isBusines && (
         <TabbarItem
           onClick={onTabChange}
           selected={activeTab === "posts"}
@@ -37,7 +37,8 @@ const Navigation: FC<Props> = ({ onTabChange, activeTab }) => {
       >
         <Icon28ServicesOutline />
       </TabbarItem>
-      <TabbarItem
+      {!isBusines && (
+        <TabbarItem
         onClick={onTabChange}
         selected={activeTab === "profile"}
         data-tab="profile"
@@ -45,6 +46,8 @@ const Navigation: FC<Props> = ({ onTabChange, activeTab }) => {
       >
         <Icon28UserCircleOutline />
       </TabbarItem>
+      )}
+      
     </Tabbar>
   );
 };
