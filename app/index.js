@@ -302,13 +302,13 @@ app.put('/event/:id', async (req, res) => {
   let event = await Event.findOne({ where: { id: requestId}});
   event.set(req.body);
   if(req.body.tags) {
-  const tags = await Tag.findAll({
-    where: {
-      name: req.body.tags
-    }
-  })
-  event.setTags(tags);
-}
+    const tags = await Tag.findAll({
+      where: {
+        name: req.body.tags
+      }
+    })
+    event.setTags(tags);
+  }
 
   event = await event.save();
   res.send(event);
@@ -432,6 +432,13 @@ app.delete('/users', async (req, res) => {
   res.send("User table dropped!");
 })
 
+app.delete('/user/:id', async (req, res) => {
+  const requestId = req.params.id;
+  let user = await User.findOne({ where: { id: requestId}});
+  await user.destroy();
+  res.send('item deleted!');
+})
+
 app.post('/users', async (req, res) => {
   let user =  await User.create(req.body);
   if(req.body.tags) {
@@ -521,8 +528,8 @@ app.put('/user/:id', async (req, res) => {
         name: req.body.tags
       }
     })
+    user.setTags(tags);
   }
-  user.setTags(tags);
 
   user = await user.save();
   res.send(user);
